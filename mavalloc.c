@@ -21,8 +21,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <stdlib.h>
 #include "mavalloc.h"
 
+void * memoryarena;
+
+enum ALGORITHM heapalgo;
 
 /**
  * @brief Initialize the allocation arena and set the algorithm type
@@ -39,7 +43,15 @@
  **/
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
-  return 0;
+    if ( size < 0 ) return -1;
+
+    memoryarena = malloc( ALIGN4( size ) );
+
+    if ( memoryarena == NULL ) return -1;
+
+    heapalgo = algorithm;
+
+    return 0;
 }
 
 
@@ -52,7 +64,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
  **/
 void mavalloc_destroy( )
 {
-  return;
+    return;
 }
 
 
@@ -72,8 +84,8 @@ void mavalloc_destroy( )
  **/
 void * mavalloc_alloc( size_t size )
 {
-  // only return NULL on failure
-  return NULL;
+    // only return NULL on failure
+    return NULL;
 }
 
 
@@ -89,7 +101,7 @@ void * mavalloc_alloc( size_t size )
  */
 void mavalloc_free( void * ptr )
 {
-  return;
+    return;
 }
 
 
@@ -102,9 +114,9 @@ void mavalloc_free( void * ptr )
  */
 int mavalloc_size( )
 {
-  int number_of_nodes = 0;
+    int number_of_nodes = 0;
 
-  return number_of_nodes;
+    return number_of_nodes;
 }
 
 
