@@ -23,30 +23,89 @@
 
 #include "mavalloc.h"
 
+
+/**
+ * @brief Initialize the allocation arena and set the algorithm type
+ *
+ * This function takes the provided size and calls malloc to allocate a 
+ * memory arena. The size must be aligned to a word boundary.
+ * 
+ * If the allocation succeeds it returns 0. If the allocation fails or the 
+ * size is less than 0 the function returns -1
+ *
+ * \param size The size of the pool to allocate in bytes
+ * \param algorithm The heap algorithm to implement
+ * \return 0 on success. -1 on failure
+ **/
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
   return 0;
 }
 
+
+/**
+ * @brief Destroy the arena 
+ *
+ * This function releases the arena
+ *
+ * \return None 
+ **/
 void mavalloc_destroy( )
 {
   return;
 }
 
+
+/**
+ * @brief Allocate memory from the arena 
+ *
+ * This function allocated memory from the arena.  The parameter size 
+ * specifies the number of bytes to allocates.  This _must_ be 4 byte aligned using the 
+ * ALIGN4 macro. 
+ * 
+ * The function searches the arena for a free block using the heap allocation algorithm 
+ * specified when the arena was allocated.
+ *
+ * If there is no available block of memory the function returns NULL
+ *
+ * \return A pointer to the available memory or NULL if no free block is found 
+ **/
 void * mavalloc_alloc( size_t size )
 {
   // only return NULL on failure
   return NULL;
 }
 
+
+/*
+ * \brief free the pointer
+ *
+ * frees the memory block pointed to by pointer. if the block is adjacent
+ * to another block then coalesce (combine) them
+ *
+ * \param ptr the heap memory to free
+ *
+ * \return none
+ */
 void mavalloc_free( void * ptr )
 {
   return;
 }
 
+
+/*
+ * \brief Allocator size
+ *
+ * Return the number of nodes in the allocators linked list 
+ *
+ * \return The size of the allocator linked list 
+ */
 int mavalloc_size( )
 {
   int number_of_nodes = 0;
 
   return number_of_nodes;
 }
+
+
+
