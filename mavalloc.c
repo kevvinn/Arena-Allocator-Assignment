@@ -24,9 +24,36 @@
 #include <stdlib.h>
 #include "mavalloc.h"
 
-void * memoryarena;
+// Pointer to the start of memoryarena
+void * memory_arena;
 
-enum ALGORITHM heapalgo;
+// Varible that contains the current algorithm used
+enum ALGORITHM heap_algo;
+
+// Enum that specifies hole or process for the node structure
+enum ALLOCATE {
+    HOLE = 0,
+    PROCESS = 1
+};
+
+// Node structure for linked list
+// Each node specifies hole or process, the address where it starts, 
+// the length, and a pointer to the next item.
+struct Node {
+    enum ALLOCATE type;
+    void * start;
+    size_t length;
+    struct Node * next;
+};
+
+// Pointer to the first node in the linked list
+struct Node * head = NULL;
+
+// Due to only using malloc() once, the size of the node itself 
+// will have to be taken into account when determining the address and length,
+// as the size of the node structure itself will take up space in the 
+// memory arena
+size_t node_size = sizeof( struct Node );
 
 /**
  * @brief Initialize the allocation arena and set the algorithm type
@@ -44,19 +71,33 @@ enum ALGORITHM heapalgo;
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
     if ( size < 0 ) return -1;
+    
+    // 4 byte word align size
+    size_t requested_size = ALIGN4( size );
 
-    memoryarena = malloc( ALIGN4( size ) );
+    // If malloc() succeeds, malloc() returns a void pointer pointing 
+    // to the memory allocated
+    memory_arena = malloc( requested_size );
 
-    if ( memoryarena == NULL ) return -1;
+    // If malloc() fails, malloc() returns a NULL pointer
+    if ( memory_arena == NULL ) return -1;
 
-    heapalgo = algorithm;
+    // Sets current algorithm
+    heap_algo = algorithm;
+
+    // Initiate first node in linked list, type hole
+    head = (struct Node *)memory_arena;
+    head->next = NULL;
+    new->type = HOLE;
+    new->start = memory_arena;
+    new->length = requested_size; 
 
     return 0;
 }
 
 
 /**
- * @brief Destroy the arena 
+ * @brief Destroy the arena
  *
  * This function releases the arena
  *
