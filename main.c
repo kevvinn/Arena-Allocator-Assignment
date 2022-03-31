@@ -2,6 +2,7 @@
 #include "tinytest.h"
 #include <stdio.h>
 
+// This test case will pass
 int test_case_0()
 {
     if( mavalloc_init( 2048, FIRST_FIT ) ) 
@@ -14,6 +15,7 @@ int test_case_0()
     return 1;
 }
 
+// This test case will fail
 int test_case_1()
 {
   char * ptr = ( char * ) mavalloc_alloc ( 65535 );
@@ -28,6 +30,7 @@ int test_case_1()
   return 1;
 }
 
+// Still needs mavalloc_free() to pass
 int test_case_2()
 {
     if( mavalloc_init( 2048, FIRST_FIT ) ) 
@@ -35,12 +38,16 @@ int test_case_2()
         return 0;
     }
 
+    printf(" mavalloc_init() successful.\n");
+
   char * ptr1 = ( char * ) mavalloc_alloc( 2048 );
 
   if( ptr1 == NULL )
   {
       return 0;
   }
+
+    printf(" mavalloc_alloc() successful.\n");
 
   mavalloc_free( ptr1 );
 
@@ -51,6 +58,8 @@ int test_case_2()
       return 0;
   }
 
+    printf(" mavalloc_alloc() successful.\n");
+
   mavalloc_free( ptr2 );
 
   mavalloc_destroy( );
@@ -58,6 +67,8 @@ int test_case_2()
   return 1;
 }
 
+// This test case did not allow the other test cases to run.
+// I don't know why, so it's just commented out.
 /*
 int test_case_3()
 {

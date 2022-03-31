@@ -21,37 +21,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <stdlib.h>
 #include "mavalloc.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 // Pointer to the start of memoryarena
 void * memory_arena;
 
+
+// Size of total memory_arena space allocated (prevent seg faults)
+size_t memory_arena_size;
+
+
 // Varible that contains the current algorithm used
 enum ALGORITHM heap_algo;
 
+
 // Enum that specifies hole or process for the node structure
-enum ALLOCATE {
+enum ALLOCATE 
+{
     HOLE = 0,
     PROCESS = 1
 };
 
+
 // Node structure for linked list
 // Each node specifies hole or process, the address where it starts, 
-// the length, and a pointer to the next item.
-struct Node {
+// the size, and a pointer to the next item.
+struct Node 
+{
     enum ALLOCATE type;
-    void * start;
-    size_t length;
+    size_t address;
+    size_t size;
     struct Node * next;
 };
 
-// Pointer to the first node in the linked list
-struct Node * head = NULL;
+
+// Pointer to node that points to the head of the linked list (first node)
+// Necessary for the triple reference technique for linked lists
+struct Node * head_pointer = NULL;
+
 
 // Node constructor
-struct Node * new_node( enum ALLOCATE type, void * start, size_t length ) {
-
+struct Node * new_node( enum ALLOCATE type, size_t address, size_t size ) 
+{
     struct Node * new = (struct Node *)malloc( sizeof( struct Node ) );
 
     // If malloc() fails, malloc() returns a NULL pointer
@@ -59,11 +72,12 @@ struct Node * new_node( enum ALLOCATE type, void * start, size_t length ) {
 
     new->next = NULL;
     new->type = type;
-    new->start = start;
-    new->length = length;
+    new->address = address;
+    new->size = size;
 
     return new;
 }
+
 
 /**
  * @brief Initialize the allocation arena and set the algorithm type
@@ -92,14 +106,23 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
     // If malloc() fails, malloc() returns a NULL pointer
     if ( memory_arena == NULL ) return -1;
 
+    // Sets size of the memory arena
+    memory_arena_size = requested_size;
+
     // Sets current algorithm
     heap_algo = algorithm;
 
-    // Initiate first node in linked list, type hole
-    head = new_node( HOLE, memory_arena, requested_size );
+    // Initiate the head pointer, used in triple reference technique
+    head_pointer = new_node( HOLE, 0, 0 );
 
-    // If malloc() fails, malloc() returns a NULL pointer
-    if ( head == NULL ) return -1;
+    // If new_node() fails, new_node() returns a NULL pointer
+    if ( head_pointer == NULL ) return -1;
+
+    // Initiate hole type head node (first node in linked list)
+    head_pointer->next = new_node( HOLE, 0, requested_size );
+
+    // If new_node() fails, new_node() returns a NULL pointer
+    if ( head_pointer->next == NULL ) return -1;
 
     return 0;
 }
@@ -116,11 +139,13 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
  **/
 void mavalloc_destroy( )
 {
-    // Using an iterator, free all nodes in the linked list
-    struct Node * runner = head;
+    // Starting from the pointer to the head of the linked list, 
+    // free all nodes in the linked list
+    struct Node * runner = head_pointer;
     struct Node * node;
 
-    while( runner != NULL ) {
+    while( runner != NULL ) 
+    {
         node = runner;
         runner = runner->next;
         free( node );
@@ -130,6 +155,56 @@ void mavalloc_destroy( )
     free( memory_arena );
 
     return;
+}
+
+
+// First fit heap allocation algorithm
+void * alloc_first_fit( size_t size ) 
+{
+    // Starting from the head of the linked list, 
+    // find the first hole that is large enough for the requested size
+    struct Node * runner = head_pointer;  // Head pointer points to head node
+
+    while( runner->next->type == PROCESS || runner->next->size < size )
+    {
+        runner = runner->next;
+
+        // The end of the linked list has been reached
+        // There are no eligible holes left
+        if( runner->next == NULL ) return NULL;
+    }
+    // runner->next is now the hole node to be split
+
+    // Split the hole node into a process node and a hole node
+    // Process node will have the requested size
+    // Hole node will contain the remaining space
+
+    // First create the new process node at the hole's address
+    struct Node * new = new_node( PROCESS, runner->next->address, size );
+
+    // If new_node() fails, new_node() returns NULL
+    if( new == NULL ) return NULL;
+
+    // If no space left in the memory arena, delete the hole node
+    if( runner->next->address + size >= memory_arena_size ) 
+    {
+        free( runner->next );
+    }
+    else
+    {
+        // Point to the old hole
+        new->next = runner->next;
+
+        // Update old hole to remaining space
+        runner->next->address = runner->next->address + size;
+        runner->next->size = runner->next->size - size;
+    }
+
+    // Point to the new process node
+    runner->next = new;
+
+    //Return allocated memory arena address
+    return memory_arena + new->address;
 }
 
 
@@ -149,6 +224,25 @@ void mavalloc_destroy( )
  **/
 void * mavalloc_alloc( size_t size )
 {
+    // 4 byte word align size
+    size_t requested_size = ALIGN4( size );
+
+    // Use heap algorithm specified at initialization
+    switch( heap_algo ) 
+    {
+        case FIRST_FIT:
+            return alloc_first_fit( requested_size );
+            break; 
+        case NEXT_FIT:
+            break;
+        case BEST_FIT:
+            break;
+        case WORST_FIT:
+            break;
+        default:
+            break;
+    }
+
     // only return NULL on failure
     return NULL;
 }
