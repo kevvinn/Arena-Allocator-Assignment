@@ -2,9 +2,27 @@
 #include "tinytest.h"
 #include <stdio.h>
 
+int test_case_0()
+{
+    if( mavalloc_init( 2048, FIRST_FIT ) ) 
+    {
+        return 0;
+    }
+
+    mavalloc_destroy();
+
+    return 1;
+}
+
 int test_case_1()
 {
   char * ptr = ( char * ) mavalloc_alloc ( 65535 );
+
+  if( ptr == NULL )
+  {
+      return 0;
+  }
+
   mavalloc_free( ptr ); 
 
   return 1;
@@ -12,13 +30,26 @@ int test_case_1()
 
 int test_case_2()
 {
-  mavalloc_init( 2048, FIRST_FIT );
+    if( mavalloc_init( 2048, FIRST_FIT ) ) 
+    {
+        return 0;
+    }
 
   char * ptr1 = ( char * ) mavalloc_alloc( 2048 );
+
+  if( ptr1 == NULL )
+  {
+      return 0;
+  }
 
   mavalloc_free( ptr1 );
 
   char * ptr2 = ( char * ) mavalloc_alloc( 1024 );
+
+  if( ptr2 == NULL )
+  {
+      return 0;
+  }
 
   mavalloc_free( ptr2 );
 
@@ -27,6 +58,7 @@ int test_case_2()
   return 1;
 }
 
+/*
 int test_case_3()
 {
   // intentionally fail this test for now
@@ -35,6 +67,7 @@ int test_case_3()
 
   return 1;
 }
+*/
 
 int tinytest_setup(const char *pName)
 {
@@ -52,9 +85,10 @@ int tinytest_teardown(const char *pName)
 
 
 TINYTEST_START_SUITE(MavAllocTestSuite);
+  TINYTEST_ADD_TEST(test_case_0,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_1,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_2,tinytest_setup,tinytest_teardown);
-  TINYTEST_ADD_TEST(test_case_3,tinytest_setup,tinytest_teardown);
+//  TINYTEST_ADD_TEST(test_case_3,tinytest_setup,tinytest_teardown);
 TINYTEST_END_SUITE();
 
 TINYTEST_MAIN_SINGLE_SUITE(MavAllocTestSuite);

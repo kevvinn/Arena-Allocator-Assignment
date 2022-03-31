@@ -49,11 +49,21 @@ struct Node {
 // Pointer to the first node in the linked list
 struct Node * head = NULL;
 
-// Due to only using malloc() once, the size of the node itself 
-// will have to be taken into account when determining the address and length,
-// as the size of the node structure itself will take up space in the 
-// memory arena
-size_t node_size = sizeof( struct Node );
+// Node constructor
+struct Node * new_node( enum ALLOCATE type, void * start, size_t length ) {
+
+    struct Node * new = (struct Node *)malloc( sizeof( struct Node ) );
+
+    // If malloc() fails, malloc() returns a NULL pointer
+    if ( new == NULL ) return new;
+
+    new->next = NULL;
+    new->type = type;
+    new->start = start;
+    new->length = length;
+
+    return new;
+}
 
 /**
  * @brief Initialize the allocation arena and set the algorithm type
@@ -86,11 +96,10 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
     heap_algo = algorithm;
 
     // Initiate first node in linked list, type hole
-    head = (struct Node *)memory_arena;
-    head->next = NULL;
-    new->type = HOLE;
-    new->start = memory_arena;
-    new->length = requested_size; 
+    head = new_node( HOLE, memory_arena, requested_size );
+
+    // If malloc() fails, malloc() returns a NULL pointer
+    if ( head == NULL ) return -1;
 
     return 0;
 }
@@ -99,12 +108,27 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 /**
  * @brief Destroy the arena
  *
- * This function releases the arena
+ * This function releases all allocated memory.
+ * First it frees all the nodes in the linked link.
+ * Then it frees the memory arena.
  *
  * \return None 
  **/
 void mavalloc_destroy( )
 {
+    // Using an iterator, free all nodes in the linked list
+    struct Node * runner = head;
+    struct Node * node;
+
+    while( runner != NULL ) {
+        node = runner;
+        runner = runner->next;
+        free( node );
+    }
+
+    // Free the memory arena
+    free( memory_arena );
+
     return;
 }
 
