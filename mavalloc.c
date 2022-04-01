@@ -169,8 +169,8 @@ void * alloc_first_fit( size_t size )
     {
         runner = runner->next;
 
-        // the end of the linked list has been reached
-        // there are no eligible holes left
+        // The end of the linked list has been reached
+        // There are no eligible holes left
         if( runner->next == NULL ) return NULL;
     }
     // runner->next is now the hole node to be split
@@ -263,16 +263,12 @@ void mavalloc_free( void * ptr )
     struct Node * runner = head_pointer;
     struct Node * node;
 
-    printf(" ptr - mem_are = %ld \n", ptr - memory_arena);
-    printf(" runner->next->address = %ld \n", runner->next->address);
-    printf(" test successful \n");
-
     // Iterate through the linked list until the address is found
     while( runner->next->address != ptr - memory_arena)
     {
         runner = runner->next;
 
-        // the end of the linked list has been reached
+        // The end of the linked list has been reached
         if( runner->next == NULL ) return;
     }
 
