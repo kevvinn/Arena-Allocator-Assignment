@@ -30,7 +30,7 @@ int test_case_1()
   return 1;
 }
 
-// Still needs mavalloc_free() to pass
+// This test case will now pass!
 int test_case_2()
 {
     if( mavalloc_init( 2048, FIRST_FIT ) ) 
@@ -50,6 +50,8 @@ int test_case_2()
     printf(" mavalloc_alloc() successful.\n");
 
   mavalloc_free( ptr1 );
+
+    printf(" mavalloc_free() successful.\n");
 
   char * ptr2 = ( char * ) mavalloc_alloc( 1024 );
 
