@@ -33,12 +33,15 @@ int test_case_1()
 // This test case will now pass!
 int test_case_2()
 {
+    printf(" number of nodes = %d \n", mavalloc_size() );
+
     if( mavalloc_init( 2048, FIRST_FIT ) ) 
     {
         return 0;
     }
 
     printf(" mavalloc_init() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
 
   char * ptr1 = ( char * ) mavalloc_alloc( 2048 );
 
@@ -48,10 +51,12 @@ int test_case_2()
   }
 
     printf(" mavalloc_alloc() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
 
   mavalloc_free( ptr1 );
 
     printf(" mavalloc_free() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
 
   char * ptr2 = ( char * ) mavalloc_alloc( 1024 );
 
@@ -61,10 +66,17 @@ int test_case_2()
   }
 
     printf(" mavalloc_alloc() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
 
   mavalloc_free( ptr2 );
 
+    printf(" mavalloc_free() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
+
   mavalloc_destroy( );
+
+    printf(" mavalloc_destroy() successful.\n");
+    printf(" number of nodes = %d \n", mavalloc_size() );
 
   return 1;
 }

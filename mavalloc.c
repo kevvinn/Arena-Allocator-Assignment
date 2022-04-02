@@ -139,6 +139,9 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
  **/
 void mavalloc_destroy( )
 {
+    // Check if linked list exists
+    if( head_pointer == NULL ) return;
+
     // Starting from the pointer to the head of the linked list, 
     // free all nodes in the linked list
     struct Node * runner = head_pointer;
@@ -154,6 +157,9 @@ void mavalloc_destroy( )
     // Free the memory arena
     free( memory_arena );
 
+    // Remove access to linked list address
+    head_pointer = NULL;
+
     return;
 }
 
@@ -161,6 +167,9 @@ void mavalloc_destroy( )
 // First fit heap allocation algorithm
 void * alloc_first_fit( size_t size ) 
 {
+    // Check if linked list exists
+    if( head_pointer == NULL ) return NULL;
+
     // Starting from the head of the linked list, 
     // find the first hole that is large enough for the requested size
     struct Node * runner = head_pointer;  // Head pointer points to head node
@@ -260,6 +269,9 @@ void * mavalloc_alloc( size_t size )
  */
 void mavalloc_free( void * ptr )
 {
+    // Check if linked list exists
+    if( head_pointer == NULL ) return;
+
     struct Node * runner = head_pointer;
     struct Node * node;
 
@@ -310,7 +322,18 @@ void mavalloc_free( void * ptr )
  */
 int mavalloc_size( )
 {
+    // Check if linked list exists
+    if( head_pointer == NULL ) return 0;
+
     int number_of_nodes = 0;
+
+    struct Node * runner = head_pointer;
+
+    while( runner->next != NULL )
+    {
+        number_of_nodes++;
+        runner = runner->next;
+    }
 
     return number_of_nodes;
 }
