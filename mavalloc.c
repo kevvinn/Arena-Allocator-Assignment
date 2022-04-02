@@ -63,6 +63,16 @@ struct Node * head_pointer = NULL;
 
 
 // Node constructor
+/**
+ * @brief Node constructor
+ *
+ * Allocates memory for new node, assigns data, and returns new node
+ *
+ * \param type The type of node
+ * \param address The starting address in the memory arena
+ * \param size The number of bytes occupied in the memory arena
+ * \return struct Node * new on success. NULL on failure
+ **/
 struct Node * new_node( enum ALLOCATE type, size_t address, size_t size ) 
 {
     struct Node * new = (struct Node *)malloc( sizeof( struct Node ) );
@@ -163,8 +173,54 @@ void mavalloc_destroy( )
     return;
 }
 
+/**
+ * @brief Allocates a node of a specified size at the specified hole
+ *
+ * \param hole_ptr The node pointing to the hole node containing the space to be allocated
+ * \param size The number of bytes that will be allocated from the hole node
+ * \return void * of address of the allocated space in memory arena on success. NULL on failure.
+ **/
+void * allocate_node( struct Node * hole_ptr , size_t size )
+{
+    // Split the hole node into a process node and a hole node
+    // Process node will have the requested size
+    // Hole node will contain the remaining space
 
-// First fit heap allocation algorithm
+    // First create the new process node at the hole's address
+    struct Node * new = new_node( PROCESS, hole_ptr->next->address, size );
+
+    // If new_node() fails, new_node() returns NULL
+    if( new == NULL ) return NULL;
+
+    // If no space left in the memory arena, delete the hole node
+    if( hole_ptr->next->address + size >= memory_arena_size ) 
+    {
+        free( hole_ptr->next );
+    }
+    else
+    {
+        // Point to the old hole
+        new->next = hole_ptr->next;
+
+        // Update old hole to remaining space
+        hole_ptr->next->address = hole_ptr->next->address + size;
+        hole_ptr->next->size = hole_ptr->next->size - size;
+    }
+
+    // Point to the new process node
+    hole_ptr->next = new;
+
+    //Return allocated memory arena address
+    return memory_arena + new->address;
+}
+
+
+/**
+ * @brief First fit heap allocation algorithm
+ *
+ * \param size The size of space being requested to be allocated
+ * \return void * of address of the allocated space in memory arena on success. NULL on failure.
+ **/
 void * alloc_first_fit( size_t size ) 
 {
     // Check if linked list exists
@@ -182,38 +238,10 @@ void * alloc_first_fit( size_t size )
         // There are no eligible holes left
         if( runner->next == NULL ) return NULL;
     }
-    // runner->next is now the hole node to be split
 
-    // Split the hole node into a process node and a hole node
-    // Process node will have the requested size
-    // Hole node will contain the remaining space
-
-    // First create the new process node at the hole's address
-    struct Node * new = new_node( PROCESS, runner->next->address, size );
-
-    // If new_node() fails, new_node() returns NULL
-    if( new == NULL ) return NULL;
-
-    // If no space left in the memory arena, delete the hole node
-    if( runner->next->address + size >= memory_arena_size ) 
-    {
-        free( runner->next );
-    }
-    else
-    {
-        // Point to the old hole
-        new->next = runner->next;
-
-        // Update old hole to remaining space
-        runner->next->address = runner->next->address + size;
-        runner->next->size = runner->next->size - size;
-    }
-
-    // Point to the new process node
-    runner->next = new;
-
-    //Return allocated memory arena address
-    return memory_arena + new->address;
+    // runner->next is now the hole node with the available space
+    // runner points to the hole node
+    return allocate_node( runner, size );
 }
 
 

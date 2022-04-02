@@ -17,16 +17,16 @@ int test_case_0()
 // This test case will fail
 int test_case_1()
 {
-  char * ptr = ( char * ) mavalloc_alloc ( 65535 );
+    char * ptr = ( char * ) mavalloc_alloc ( 65535 );
 
-  if( ptr == NULL )
-  {
-      return 0;
-  }
+    if( ptr == NULL )
+    {
+        return 0;
+    }
 
-  mavalloc_free( ptr ); 
+    mavalloc_free( ptr ); 
 
-  return 1;
+    return 1;
 }
 
 // This test case will now pass!
@@ -42,42 +42,42 @@ int test_case_2()
     printf(" mavalloc_init() successful.\n");
     mavalloc_print();
 
-  char * ptr1 = ( char * ) mavalloc_alloc( 2048 );
+    char * ptr1 = ( char * ) mavalloc_alloc( 2048 );
 
-  if( ptr1 == NULL )
-  {
-      return 0;
-  }
-
-    printf(" mavalloc_alloc() successful.\n");
-    mavalloc_print();
-
-  mavalloc_free( ptr1 );
-
-    printf(" mavalloc_free() successful.\n");
-    mavalloc_print();
-
-  char * ptr2 = ( char * ) mavalloc_alloc( 1024 );
-
-  if( ptr2 == NULL )
-  {
-      return 0;
-  }
+    if( ptr1 == NULL )
+    {
+        return 0;
+    }
 
     printf(" mavalloc_alloc() successful.\n");
     mavalloc_print();
 
-  mavalloc_free( ptr2 );
+    mavalloc_free( ptr1 );
 
     printf(" mavalloc_free() successful.\n");
     mavalloc_print();
 
-  mavalloc_destroy( );
+    char * ptr2 = ( char * ) mavalloc_alloc( 1024 );
+
+    if( ptr2 == NULL )
+    {
+        return 0;
+    }
+
+    printf(" mavalloc_alloc() successful.\n");
+    mavalloc_print();
+
+    mavalloc_free( ptr2 );
+
+    printf(" mavalloc_free() successful.\n");
+    mavalloc_print();
+
+    mavalloc_destroy( );
 
     printf(" mavalloc_destroy() successful.\n");
     mavalloc_print();
 
-  return 1;
+    return 1;
 }
 
 // This test case did not allow the other test cases to run.
