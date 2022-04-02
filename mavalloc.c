@@ -202,12 +202,21 @@ void * allocate_node( struct Node * hole_ptr , size_t size )
     }
     else
     {
-        // Point to the old hole
-        new->next = hole_ptr->next;
-
         // Update old hole to remaining space
         hole_ptr->next->address = hole_ptr->next->address + size;
         hole_ptr->next->size = hole_ptr->next->size - size;
+
+        // If old hole has no space left, delete the hole node
+        if( hole_ptr->next->size <= 0 )
+        {
+            new->next = hole_ptr->next->next;
+            free( hole_ptr->next );
+        }
+        // Else point to the hole node
+        else
+        {
+            new->next = hole_ptr->next;
+        }
     }
 
     // Point to the new process node
@@ -342,7 +351,7 @@ void mavalloc_free( void * ptr )
     struct Node * node;
 
     // Iterate through the linked list until the address is found
-    while( runner->next->address != ptr - memory_arena)
+    while( runner->next->address != ptr - memory_arena )
     {
         runner = runner->next;
 
