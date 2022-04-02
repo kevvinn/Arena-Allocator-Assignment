@@ -182,6 +182,9 @@ void mavalloc_destroy( )
  **/
 void * allocate_node( struct Node * hole_ptr , size_t size )
 {
+    // Fails if hole pointer doesn't exist
+    if( hole_ptr == NULL ) return NULL;
+
     // Split the hole node into a process node and a hole node
     // Process node will have the requested size
     // Hole node will contain the remaining space
@@ -246,6 +249,40 @@ void * alloc_first_fit( size_t size )
 
 
 /**
+ * @brief Worst fit heap allocation algorithm
+ *
+ * \param size The size of space being requested to be allocated
+ * \return void * of address of the allocated space in memory arena on success. NULL on failure.
+ **/
+void * alloc_worst_fit( size_t size )
+{
+    // Check if the linked list exists
+    if( head_pointer == NULL ) return NULL;
+
+    struct Node * worst_hole_ptr = NULL;
+    size_t max = 0;
+
+    // Iterate through the linked list
+    // Store the largest eligible hole into worst_hole
+    struct Node * runner = head_pointer;
+
+    while( runner->next != NULL )
+    {
+        if( runner->next->type == HOLE && runner->next->size >= size && runner->next->size > max )
+        {
+            max = runner->next->size;
+            worst_hole_ptr = runner;
+        }
+
+        runner = runner->next;
+    }
+
+    // worst_hole_ptr now points to the hole that will be used to allocate memory in the memory arena
+    return allocate_node( worst_hole_ptr, size );
+} 
+
+
+/**
  * @brief Allocate memory from the arena 
  *
  * This function allocated memory from the arena.  The parameter size 
@@ -275,6 +312,7 @@ void * mavalloc_alloc( size_t size )
         case BEST_FIT:
             break;
         case WORST_FIT:
+            return alloc_worst_fit( requested_size );
             break;
         default:
             break;
