@@ -340,3 +340,33 @@ int mavalloc_size( )
 
 
 
+/*
+ * \brief Print linked list
+ *
+ * Print node data for each node in the linked list
+ *
+ * \return None
+ */
+void mavalloc_print( )
+{
+    // Check if linked list exists
+    if( head_pointer == NULL ) return;
+
+    int number_of_nodes = 0;
+
+    struct Node * runner = head_pointer;
+
+    while( runner->next != NULL )
+    {
+        number_of_nodes++;
+
+        printf(" %d) type = %d, address = %ld, size = %ld \n", number_of_nodes, runner->next->type, runner->next->address, runner->next->size);
+
+        runner = runner->next;
+    }
+
+    return;
+}
+
+
+

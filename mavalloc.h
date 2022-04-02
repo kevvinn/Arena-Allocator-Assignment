@@ -98,3 +98,11 @@ void mavalloc_free(void *ptr);
  */
 int mavalloc_size( );
 
+/*
+ * \brief Print linked list
+ *
+ * Print node data for each node in the linked list
+ *
+ * \return None
+ */
+void mavalloc_print( );
