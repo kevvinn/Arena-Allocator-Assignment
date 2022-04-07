@@ -47,12 +47,13 @@ enum ALLOCATE
 
 // Node structure for linked list
 // Each node specifies hole or process, the address where it starts, 
-// the size, and a pointer to the next item.
+// the size, a pointer to the previous item, and a pointer to the next item.
 struct Node 
 {
     enum ALLOCATE type;
     size_t address;
     size_t size;
+    struct Node * prev;
     struct Node * next;
 };
 
@@ -60,6 +61,9 @@ struct Node
 // Pointer to node that points to the head of the linked list (first node)
 // Necessary for the triple reference technique for linked lists
 struct Node * head_pointer = NULL;
+
+// Points to the previous node, used for next fit algorithm
+struct Node * previous_node;
 
 
 // Node constructor
@@ -133,6 +137,9 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 
     // If new_node() fails, new_node() returns a NULL pointer
     if ( head_pointer->next == NULL ) return -1;
+
+    // Set the initial previous node to the head node
+    previous_node = head_pointer;
 
     return 0;
 }
@@ -258,6 +265,74 @@ void * alloc_first_fit( size_t size )
 
 
 /**
+ * @brief Next fit heap allocation algorithm
+ *
+ * \param size The size of space being requested to be allocated
+ * \return void * of address of the allocated space in memory arena on success. NULL on failure.
+ **/
+void * alloc_next_fit( size_t size )
+{
+    // check if the linked list exists
+    if ( head_pointer == NULL ) return NULL;
+
+    // starting from the previous node in the linked list,
+    // find the next hole that is large enough for the requested size
+    struct Node * runner = previous_node; // runner pointer points to node previously left off on
+
+    while ( runner->next->type == PROCESS || runner->next->size < size )
+    {
+        runner = runner->next;
+
+        // If end of the linked list is hit, loop back to the head
+        if( runner->next == NULL ) runner = head_pointer;
+
+        // The linked list has been completely looped and is back to where it started
+        // There are no eligible holes left
+        if( runner == previous_node ) return NULL;
+    }
+
+    // Update the previous node to the hole node with the available space
+    previous_node = runner;
+
+    // runner->next is now the hole node with the available space
+    // runner points to the hole node
+    return allocate_node( runner, size );
+}
+
+/**
+ * @brief Best fit heap allocation algorithm
+ *
+ * \param size The size of space being requested to be allocated
+ * \return void * of address of the allocated space in memory arena on success. NULL on failure.
+ **/
+void * alloc_best_fit( size_t size )
+{
+    // check if the linked list exists
+    if ( head_pointer == NULL ) return NULL;
+
+    struct Node * best_hole_ptr = NULL;
+    size_t min = memory_arena_size;
+
+    // Iterate through the linked list
+    // Store the smallest eligible hole into best_hole_ptr
+    struct Node * runner = head_pointer;
+
+    while( runner->next != NULL )
+    {
+        if( runner->next->type == HOLE && runner->next->size >= size && runner->next->size < min )
+        {
+            min = runner->next->size;
+            best_hole_ptr = runner;
+        }
+
+        runner = runner->next;
+    }
+
+    // best_hole_ptr now points to the hole that will be used to allocate memory in the memory arena
+    return allocate_node( best_hole_ptr, size );
+}
+
+/**
  * @brief Worst fit heap allocation algorithm
  *
  * \param size The size of space being requested to be allocated
@@ -272,7 +347,7 @@ void * alloc_worst_fit( size_t size )
     size_t max = 0;
 
     // Iterate through the linked list
-    // Store the largest eligible hole into worst_hole
+    // Store the largest eligible hole into worst_hole_ptr
     struct Node * runner = head_pointer;
 
     while( runner->next != NULL )
@@ -317,8 +392,10 @@ void * mavalloc_alloc( size_t size )
             return alloc_first_fit( requested_size );
             break; 
         case NEXT_FIT:
+            return alloc_next_fit( requested_size );
             break;
         case BEST_FIT:
+            return alloc_best_fit( requested_size );
             break;
         case WORST_FIT:
             return alloc_worst_fit( requested_size );
