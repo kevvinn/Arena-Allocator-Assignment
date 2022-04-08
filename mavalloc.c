@@ -177,6 +177,9 @@ void mavalloc_destroy( )
     // Remove access to linked list address
     head_pointer = NULL;
 
+    // Remove access to previous node pointer
+    previous_node = NULL;
+
     return;
 }
 
@@ -311,7 +314,7 @@ void * alloc_best_fit( size_t size )
     if ( head_pointer == NULL ) return NULL;
 
     struct Node * best_hole_ptr = NULL;
-    size_t min = memory_arena_size;
+    size_t min = memory_arena_size+1;
 
     // Iterate through the linked list
     // Store the smallest eligible hole into best_hole_ptr

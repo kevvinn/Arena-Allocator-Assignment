@@ -128,6 +128,76 @@ int first_fit_test()
     return 1;
 }
 
+// Unit test for next fit
+int next_fit_test()
+{
+    // Setup
+    printf("\n Setting up next fit test: \n");
+
+    mavalloc_init( 1840, NEXT_FIT );
+
+    char * hole1 = (char *)mavalloc_alloc( 200 );
+    char * block1 = (char *)mavalloc_alloc( 400 );
+    char * hole2 = (char *)mavalloc_alloc( 240 );
+    char * block2 = (char *)mavalloc_alloc( 400 );
+    char * hole3 = (char *)mavalloc_alloc( 120 );
+    char * block3 = (char *)mavalloc_alloc( 400 );
+    char * hole4 = (char *)mavalloc_alloc( 80 );
+
+    mavalloc_free( hole1 );
+    mavalloc_free( hole2 );
+    mavalloc_free( hole3 );
+    mavalloc_free( hole4 );
+
+    // Next fit algorithm
+
+    char * test1 = (char *)mavalloc_alloc( 80 );
+    char * test2 = (char *)mavalloc_alloc( 200 );
+    char * test3 = (char *)mavalloc_alloc( 60 );
+
+    printf("\n Result of the next fit test: \n");
+    mavalloc_print();
+
+    mavalloc_destroy();
+
+    return 1;
+}
+
+// Unit test for best fit 
+int best_fit_test() 
+{
+    // Setup
+    printf("\n Setting up best fit test: \n");
+
+    mavalloc_init( 1840, BEST_FIT );
+
+    char * hole1 = (char *)mavalloc_alloc( 200 );
+    char * block1 = (char *)mavalloc_alloc( 400 );
+    char * hole2 = (char *)mavalloc_alloc( 240 );
+    char * block2 = (char *)mavalloc_alloc( 400 );
+    char * hole3 = (char *)mavalloc_alloc( 120 );
+    char * block3 = (char *)mavalloc_alloc( 400 );
+    char * hole4 = (char *)mavalloc_alloc( 80 );
+
+    mavalloc_free( hole1 );
+    mavalloc_free( hole2 );
+    mavalloc_free( hole3 );
+    mavalloc_free( hole4 );
+
+    // Best fit algorithm
+
+    char * test1 = (char *)mavalloc_alloc( 80 );
+    char * test2 = (char *)mavalloc_alloc( 200 );
+    char * test3 = (char *)mavalloc_alloc( 60 );
+
+    printf("\n Result of the best fit test: \n");
+    mavalloc_print();
+
+    mavalloc_destroy();
+
+    return 1;
+}
+
 // Unit test for worst fit 
 int worst_fit_test() 
 {
@@ -148,8 +218,6 @@ int worst_fit_test()
     mavalloc_free( hole2 );
     mavalloc_free( hole3 );
     mavalloc_free( hole4 );
-
-    mavalloc_print();
 
     // Worst fit algorithm
 
@@ -194,11 +262,13 @@ int tinytest_teardown(const char *pName)
 
 
 TINYTEST_START_SUITE(MavAllocTestSuite);
-  TINYTEST_ADD_TEST(test_case_0,tinytest_setup,tinytest_teardown);
-  TINYTEST_ADD_TEST(test_case_1,tinytest_setup,tinytest_teardown);
-  TINYTEST_ADD_TEST(test_case_2,tinytest_setup,tinytest_teardown);
-  TINYTEST_ADD_TEST(test_case_3,tinytest_setup,tinytest_teardown);
+  //TINYTEST_ADD_TEST(test_case_0,tinytest_setup,tinytest_teardown);
+  //TINYTEST_ADD_TEST(test_case_1,tinytest_setup,tinytest_teardown);
+  //TINYTEST_ADD_TEST(test_case_2,tinytest_setup,tinytest_teardown);
+  //TINYTEST_ADD_TEST(test_case_3,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(worst_fit_test,tinytest_setup,tinytest_teardown);
+  TINYTEST_ADD_TEST(best_fit_test,tinytest_setup,tinytest_teardown);
+  TINYTEST_ADD_TEST(next_fit_test,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(first_fit_test,tinytest_setup,tinytest_teardown);
 TINYTEST_END_SUITE();
 
