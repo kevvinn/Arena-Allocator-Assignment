@@ -1,3 +1,14 @@
+/*
+   CSE 3320 - Operating Systems
+   Professor Trevor Bakker
+   Programming Assignment 3: Arena Allocator 
+   
+   Name:   Ariel Rico
+   UTA ID: 1001872003
+
+   Name:   Kevin Vu
+   UTA ID: 1001795250
+*/
 // The MIT License (MIT)
 // 
 // Copyright (c) 2022 Trevor Bakker 
