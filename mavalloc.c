@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Total number of nodes allocated for the stack
+#define NODE_AMOUNT 200
+
 // Pointer to the start of memoryarena
 void * memory_arena;
 
@@ -53,7 +56,6 @@ struct Node
     enum ALLOCATE type;
     size_t address;
     size_t size;
-    struct Node * prev;
     struct Node * next;
 };
 
@@ -65,6 +67,54 @@ struct Node * head_pointer = NULL;
 // Points to the previous node, used for next fit algorithm
 struct Node * previous_node;
 
+// Memory allocated for the reserve node stack from malloc()
+struct Node * node_stack;
+
+// Points to the head of the stack
+struct Node * stack_head;
+
+// Initilizes the reserve node stack
+void node_stack_init( int node_amount )
+{
+    int i;
+
+    // Allocates an array of nodes
+    node_stack = (struct Node *)malloc( node_amount * sizeof( struct Node ) );
+
+    // Create linked list out of node array, to be used as a stack
+    for( i = 0; i < node_amount - 1; i++ )
+    {
+        node_stack[ i ].next = &(node_stack[ i + 1 ]);
+    }
+    node_stack[ node_amount - 1 ].next = NULL;
+
+    // stack_head points to the first node in the stack
+    stack_head = node_stack;
+}
+
+// Returns a node popped off the stack to be used
+struct Node * node_malloc()
+{
+    // If the stack is empty, node_malloc() fails and returns NULL
+    if( stack_head == NULL ) return NULL;
+
+    // Pop a node off the stack
+    struct Node * new = stack_head;
+
+    stack_head = stack_head->next;
+    
+    return new;
+}
+
+// Takes a node and pushes it onto the stack
+void node_free( struct Node * node )
+{
+    node->next = stack_head;
+
+    stack_head = node;
+
+    return;
+}
 
 // Node constructor
 /**
@@ -79,7 +129,7 @@ struct Node * previous_node;
  **/
 struct Node * new_node( enum ALLOCATE type, size_t address, size_t size ) 
 {
-    struct Node * new = (struct Node *)malloc( sizeof( struct Node ) );
+    struct Node * new = node_malloc();
 
     // If malloc() fails, malloc() returns a NULL pointer
     if ( new == NULL ) return new;
@@ -123,6 +173,9 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
     // Sets size of the memory arena
     memory_arena_size = requested_size;
 
+    // Initialize node stack
+    node_stack_init( NODE_AMOUNT );
+
     // Sets current algorithm
     heap_algo = algorithm;
 
@@ -161,15 +214,18 @@ void mavalloc_destroy( )
 
     // Starting from the pointer to the head of the linked list, 
     // free all nodes in the linked list
-    struct Node * runner = head_pointer;
-    struct Node * node;
+    //struct Node * runner = head_pointer;
+    //struct Node * node;
 
-    while( runner != NULL ) 
-    {
-        node = runner;
-        runner = runner->next;
-        free( node );
-    }
+    //while( runner != NULL ) 
+    //{
+    //    node = runner;
+    //    runner = runner->next;
+    //    node_free( node );
+    //}
+
+    // Free the all the nodes allocated in the node_stack array
+    free( node_stack );
 
     // Free the memory arena
     free( memory_arena );
@@ -179,6 +235,9 @@ void mavalloc_destroy( )
 
     // Remove access to previous node pointer
     previous_node = NULL;
+
+    // Remove access to the stack head
+    stack_head = NULL;
 
     return;
 }
@@ -208,7 +267,7 @@ void * allocate_node( struct Node * hole_ptr , size_t size )
     // If no space left in the memory arena, delete the hole node
     if( hole_ptr->next->address + size >= memory_arena_size ) 
     {
-        free( hole_ptr->next );
+        node_free( hole_ptr->next );
     }
     else
     {
@@ -220,7 +279,7 @@ void * allocate_node( struct Node * hole_ptr , size_t size )
         if( hole_ptr->next->size <= 0 )
         {
             new->next = hole_ptr->next->next;
-            free( hole_ptr->next );
+            node_free( hole_ptr->next );
         }
         // Else point to the hole node
         else
@@ -445,7 +504,7 @@ void mavalloc_free( void * ptr )
         node = runner->next;
         runner->size = runner->size + node->size;
         runner->next = node->next;
-        free( node );
+        node_free( node );
     }
     else // Situation a)
     {
@@ -461,7 +520,7 @@ void mavalloc_free( void * ptr )
         node = runner->next;
         runner->size = runner->size + node->size;
         runner->next = node->next;
-        free( node );
+        node_free( node );
     }
 
     return;
